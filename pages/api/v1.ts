@@ -25,38 +25,43 @@ async function ensureUsers() {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  await dbConnect();
-  await ensureUsers();
-
-  const { action, payload, secret } = req.body;
-
-  // Basic Security Check for Admin Actions
-  const adminActions = ['admin_stats', 'admin_reset', 'admin_reset_system', 'admin_get_answers', 'admin_export'];
-  if (adminActions.includes(action)) {
-    const envSecret = process.env.ADMIN_SECRET_KEY;
-    const fallbackSecret = "bS%83B4+4uAO-#&&UyK;H+";
-
-    // Check if it matches either the ENV variable OR the hardcoded fallback
-    if (secret !== envSecret && secret !== fallbackSecret) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-  }
-
   try {
+    // 1. Database Connection with Timeout
+    console.log("Connecting to DB...");
+    await dbConnect();
+
+    // 2. Extract Data
+    const { action, payload, secret } = req.body;
+    if (!action) return res.status(400).json({ error: 'Missing action' });
+
+    console.log(`API Action: ${action}`);
+
+    // 3. Security Check
+    const adminActions = ['admin_stats', 'admin_reset', 'admin_reset_system', 'admin_get_answers', 'admin_export'];
+    if (adminActions.includes(action)) {
+      const envSecret = process.env.ADMIN_SECRET_KEY;
+      const fallbackSecret = "bS%83B4+4uAO-#&&UyK;H+";
+      if (secret !== envSecret && secret !== fallbackSecret) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+    }
+
+    // 4. Seeding Check (Only on login or admin to save performance)
+    if (action === 'login_user' || action === 'admin_stats') {
+      await ensureUsers();
+    }
+
     switch (action) {
       case 'login_user': {
         const { userId, pin } = payload;
         const user = await User.findById(userId);
 
         if (user && user.pin === pin) {
-          // Check for existing session to determining resume state
           const session = await Session.findOne({ userId });
-          const hasProgress = session && !session.isCompleted && (session.currentIndex > 0 || session.totalTimeSpent > 0);
+          const hasProgress = !!(session && !session.isCompleted && (session.currentIndex > 0 || session.totalTimeSpent > 0));
 
-          // Return user without PIN
           const userObj = user.toObject();
           delete userObj.pin;
-
           return res.json({ success: true, user: userObj, hasProgress });
         }
         return res.status(401).json({ error: 'Invalid PIN' });
@@ -98,44 +103,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'save_progress': {
         const { userId, questionId, section, answerText, timeSpent, currentIndex } = payload;
 
-        // 1. Save Answer
-        await Answer.findOneAndUpdate(
-          { userId, questionId },
-          {
-            section,
-            answerText,
-            $inc: { timeSpent: timeSpent || 0 }, // Accumulate time
-            updatedAt: Date.now()
-          },
-          { upsert: true, new: true }
-        );
-
-        // 2. Update Session
+        // Atomic update of session progress and timer
         const updateObj: any = {
           currentIndex,
-          currentSection: section,
-          lastActiveAt: Date.now(),
-          $inc: {
-            totalTimeSpent: timeSpent || 0
-          }
+          lastActiveAt: Date.now()
         };
 
-        // Use $inc for nested section time
-        if (section) {
-          updateObj.$inc[`sectionTimes.${section}`] = timeSpent || 0;
-        }
+        // Increment time for the section
+        const sectionField = `sectionTimes.${section}`;
+        const incObj: any = { totalTimeSpent: timeSpent };
+        if (section) incObj[sectionField] = timeSpent;
 
-        await Session.findOneAndUpdate({ userId }, updateObj);
+        await Session.findOneAndUpdate(
+          { userId },
+          { $set: updateObj, $inc: incObj },
+          { upsert: true }
+        );
+
+        // Save or update answer
+        await Answer.findOneAndUpdate(
+          { userId, questionId },
+          { section, answerText, $inc: { timeSpent }, updatedAt: Date.now() },
+          { upsert: true }
+        );
 
         return res.json({ success: true });
       }
 
       case 'log_event': {
-        const { userId, event } = payload; // event could be 'backtrack' or 'blur'
-        const field = event === 'backtrack' ? 'backtrackCount' : event === 'blur' ? 'blurCount' : null;
-        if (field) {
-          await Session.findOneAndUpdate({ userId }, { $inc: { [field]: 1 } });
-        }
+        const { userId, event } = payload; // 'backtrack' or 'blur'
+        const field = event === 'backtrack' ? 'backtrackCount' : 'blurCount';
+        await Session.findOneAndUpdate({ userId }, { $inc: { [field]: 1 } });
         return res.json({ success: true });
       }
 
@@ -155,49 +153,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // --- Admin Actions ---
 
       case 'admin_stats': {
-        const users = await User.find({});
+        const users = await User.find({ role: 'USER' });
         const sessions = await Session.find({});
-        const answers = await Answer.find({}); // Optimization: could be aggressive for huge datasets, but fine for <100 users
+        const answers = await Answer.find({});
 
         const stats = users.map(u => {
-          const sess = sessions.find(s => s.userId === u._id.toString());
-          const userAns = answers.filter(a => a.userId === u._id.toString());
-          return {
-            user: { id: u._id, name: u.name, role: u.role, language: u.language },
-            session: sess ? sess.toObject() : null,
-            answerCount: userAns.length,
-            isOnline: sess ? (Date.now() - sess.lastActiveAt) < 30000 : false
-          };
+          const s = sessions.find(sess => sess.userId === u.id) || null;
+          const aCount = answers.filter(ans => ans.userId === u.id).length;
+          const isOnline = s ? (Date.now() - s.lastActiveAt < 30000) : false;
+          return { user: u, session: s, answerCount: aCount, isOnline };
         });
+
         return res.json(stats);
       }
 
       case 'admin_get_answers': {
         const { userId } = payload;
-        const answers = await Answer.find({ userId });
+        const answers = await Answer.find({ userId }).sort({ questionId: 1 });
         return res.json(answers);
       }
 
       case 'admin_reset': {
-        const { targetUserId, adminId } = payload;
-        await User.deleteOne({ _id: targetUserId }); // Reset user metadata (language, etc)
+        const { targetUserId } = payload;
         await Session.deleteOne({ userId: targetUserId });
         await Answer.deleteMany({ userId: targetUserId });
-        await Log.create({
-          userId: targetUserId, action: 'ADMIN_RESET', timestamp: Date.now(), metadata: { by: adminId }
-        });
+        await User.deleteOne({ _id: targetUserId });
+        await Log.create({ userId: 'ADMIN', action: 'ADMIN_RESET', timestamp: Date.now(), metadata: { targetUserId } });
         return res.json({ success: true });
       }
 
       case 'admin_reset_system': {
-        const { adminId } = payload;
-        await User.deleteMany({}); // Wipe all user data
         await Session.deleteMany({});
         await Answer.deleteMany({});
         await Log.deleteMany({});
-        await Log.create({
-          userId: 'SYSTEM', action: 'ADMIN_RESET', timestamp: Date.now(), metadata: { by: adminId, type: 'full' }
-        });
+        await User.deleteMany({ role: 'USER' });
         return res.json({ success: true });
       }
 
@@ -210,10 +199,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       default:
-        return res.status(400).json({ error: 'Invalid action' });
+        return res.status(400).json({ error: 'Unknown action' });
     }
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Internal Server Error' });
+  } catch (err: any) {
+    console.error("CRITICAL API ERROR:", err);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 }
