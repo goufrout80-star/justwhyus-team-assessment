@@ -16,9 +16,9 @@ const CompletionScreen: React.FC<{ user: UserProfile }> = ({ user }) => (
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      
+
       <h1 className="text-3xl font-bold text-brand-darker mb-4">Thank you for your time and effort.</h1>
-      
+
       <div className="space-y-4 text-gray-600 leading-relaxed mb-8">
         <p>Your responses will help us improve and build this application better.</p>
         <p>The admin team will notify you once the analysis is completed.</p>
@@ -27,7 +27,7 @@ const CompletionScreen: React.FC<{ user: UserProfile }> = ({ user }) => (
 
       <div className="pt-8 border-t border-gray-100">
         <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">JustWhyUs Team</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="text-xs text-gray-400 hover:text-brand-primary transition-colors underline"
         >
@@ -40,41 +40,55 @@ const CompletionScreen: React.FC<{ user: UserProfile }> = ({ user }) => (
 
 const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentLang, setCurrentLang] = useState<Language>(initialLanguage);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const question = QUESTIONS[currentIndex];
   const startTimeRef = useRef<number>(Date.now());
 
   // Initial Load
   useEffect(() => {
     const init = async () => {
-      // Fetch full data bundle
-      const data = await dbService.getUser(user.id);
-      
-      let currentSession = data.session;
-      if (!currentSession) {
-         currentSession = await dbService.startOrResumeSession(user.id);
-      }
+      try {
+        // Fetch full data bundle
+        const data = await dbService.getUser(user.id);
 
-      // Map answers
-      const ansMap: Record<number, string> = {};
-      if (data.answers) {
-        data.answers.forEach((a: any) => {
-          ansMap[a.questionId] = a.answerText;
-        });
-      }
+        if (!data) {
+          throw new Error("Failed to connect to server. Please check your internet connection or database configuration.");
+        }
 
-      setSession(currentSession);
-      if (currentSession) {
-        setCurrentIndex(currentSession.currentIndex);
-        if (data.user?.language) setCurrentLang(data.user.language);
+        let currentSession = data.session;
+        if (!currentSession) {
+          currentSession = await dbService.startOrResumeSession(user.id);
+          if (!currentSession) {
+            throw new Error("Could not start session. Please try again.");
+          }
+        }
+
+        // Map answers
+        const ansMap: Record<number, string> = {};
+        if (data.answers) {
+          data.answers.forEach((a: any) => {
+            ansMap[a.questionId] = a.answerText;
+          });
+        }
+
+        setSession(currentSession);
+        if (currentSession) {
+          setCurrentIndex(currentSession.currentIndex);
+          if (data.user?.language) setCurrentLang(data.user.language);
+        }
+        setAnswers(ansMap);
+      } catch (err: any) {
+        console.error("Initialization error:", err);
+        setError(err.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
       }
-      setAnswers(ansMap);
-      setLoading(false);
     };
     init();
   }, [user.id]);
@@ -89,7 +103,7 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
     const answerText = answers[question.id] || '';
 
     setIsSaving(true);
-    
+
     // Save to DB (Single call handles answer + session update)
     await dbService.saveAnswer(user.id, question.id, question.section, answerText, elapsed, currentIndex);
     await dbService.updateUserLanguage(user.id, currentLang);
@@ -104,7 +118,7 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
     if (!session || session.isCompleted) return;
     const handler = setTimeout(() => {
       saveCurrentData();
-    }, 2000); 
+    }, 2000);
     return () => clearTimeout(handler);
   }, [answers[question?.id], saveCurrentData, session]);
 
@@ -132,7 +146,7 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
 
   const handleNext = async () => {
     await saveCurrentData(true);
-    
+
     if (currentIndex < QUESTIONS.length - 1) {
       setCurrentIndex(prev => prev + 1);
       window.scrollTo(0, 0);
@@ -157,6 +171,23 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-brand-surface flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full text-center border-l-4 border-red-500">
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Connection Error</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary transition-colors"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (session?.isCompleted) {
     return <CompletionScreen user={user} />;
   }
@@ -175,17 +206,17 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
 
   return (
     <div className="min-h-screen bg-brand-surface text-brand-darker font-sans flex flex-col">
-      
+
       {/* Top Navigation Bar */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-brand-secondary/10">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-             <div className="w-8 h-8 rounded-lg bg-brand-secondary flex items-center justify-center text-brand-accent font-bold text-sm">
-               JW
-             </div>
-             <div className="hidden sm:block">
-                <div className="text-xs font-bold text-brand-secondary uppercase tracking-widest">JustWhyUs</div>
-             </div>
+            <div className="w-8 h-8 rounded-lg bg-brand-secondary flex items-center justify-center text-brand-accent font-bold text-sm">
+              JW
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-xs font-bold text-brand-secondary uppercase tracking-widest">JustWhyUs</div>
+            </div>
           </div>
 
           <div className="flex bg-gray-100 rounded-full p-1">
@@ -193,11 +224,10 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
               <button
                 key={lang}
                 onClick={() => setCurrentLang(lang)}
-                className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
-                  currentLang === lang 
-                    ? 'bg-white shadow text-brand-darker' 
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
+                className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${currentLang === lang
+                  ? 'bg-white shadow text-brand-darker'
+                  : 'text-gray-400 hover:text-gray-600'
+                  }`}
               >
                 {lang.toUpperCase()}
               </button>
@@ -205,18 +235,18 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
           </div>
 
           <div className="flex items-center space-x-3">
-             <div className="text-right hidden sm:block">
-               <div className="text-xs font-medium text-gray-900">{user.name}</div>
-               <div className="text-[10px] text-brand-primary flex items-center justify-end gap-1">
-                 {isSaving ? 'Saving...' : 'Online'}
-                 <span className={`w-1.5 h-1.5 rounded-full ${isSaving ? 'bg-yellow-400 animate-pulse' : 'bg-green-500'}`}></span>
-               </div>
-             </div>
+            <div className="text-right hidden sm:block">
+              <div className="text-xs font-medium text-gray-900">{user.name}</div>
+              <div className="text-[10px] text-brand-primary flex items-center justify-end gap-1">
+                {isSaving ? 'Saving...' : 'Online'}
+                <span className={`w-1.5 h-1.5 rounded-full ${isSaving ? 'bg-yellow-400 animate-pulse' : 'bg-green-500'}`}></span>
+              </div>
+            </div>
           </div>
         </div>
-        
+
         <div className="h-1 w-full bg-gray-100">
-          <div 
+          <div
             className="h-full bg-brand-secondary transition-all duration-700 ease-out"
             style={{ width: `${progressPct}%` }}
           />
@@ -226,7 +256,7 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
       {/* Main Content */}
       <main className="flex-grow flex flex-col items-center justify-start pt-8 pb-20 px-4 sm:px-6">
         <div className="w-full max-w-3xl">
-          
+
           <div className="flex justify-between items-end mb-6 px-1">
             <span className="text-xs font-bold text-brand-primary tracking-widest uppercase bg-brand-primary/10 px-2 py-1 rounded">
               {question?.section}
@@ -237,7 +267,7 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl shadow-brand-darker/5 border border-white overflow-hidden">
-            
+
             <div className={`px-8 py-10 sm:px-12 sm:py-12 ${question?.isPuzzle ? 'bg-brand-primary/5' : ''}`}>
               {question?.isPuzzle && (
                 <div className="mb-4 flex items-center gap-2 text-brand-secondary text-xs font-bold uppercase tracking-wider">
@@ -245,8 +275,8 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
                   Logic Puzzle
                 </div>
               )}
-              
-              <h2 
+
+              <h2
                 className={`text-2xl sm:text-3xl md:text-4xl font-semibold text-brand-darker leading-tight sm:leading-snug transition-all duration-300 ${isRTL ? 'font-arabic text-right' : ''}`}
                 dir={isRTL ? 'rtl' : 'ltr'}
               >
