@@ -8,6 +8,8 @@ export const USERS: UserProfile[] = [
   { id: 'u3', name: 'Ayoub', pin: '00229900e', role: UserRole.USER },
   { id: 'nizar', name: 'Nizar', pin: '88994411n', role: UserRole.USER },
   { id: 'abdu', name: 'Abdu', pin: '11223344a', role: UserRole.USER },
+  { id: 'saad', name: 'Saad', pin: '55667788s', role: UserRole.USER },
+  { id: 'noureddine', name: 'Noureddine', pin: '66778899n', role: UserRole.USER },
 ];
 
 let qId = 1;
