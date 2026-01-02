@@ -110,6 +110,30 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
     init();
   }, [user.id]);
 
+  // --- Heartbeat & Activity Tracking ---
+  useEffect(() => {
+    if (!user || !session || session.isCompleted) return;
+
+    // 1. Heartbeat every 15 seconds to keep "Online" status in Dashboard
+    const hbInterval = setInterval(() => {
+      dbService.heartbeat(user.id);
+    }, 15000);
+
+    // 2. Distraction Tracking (Window Blur/Focus)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        dbService.logEvent(user.id, 'blur');
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(hbInterval);
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user.id, session?.isCompleted]);
+
   // --- Real-Time Save Logic ---
   const saveImmediate = async (idx: number, val: any) => {
     if (!session || session.isCompleted) return;
@@ -140,11 +164,11 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
     const qId = question.id;
     setAnswers(prev => ({ ...prev, [qId]: val }));
 
-    // Debounce Save
+    // Debounce Save (1s for better typing experience)
     if (pendingSaveRef.current) clearTimeout(pendingSaveRef.current);
     pendingSaveRef.current = setTimeout(() => {
       saveImmediate(currentIndex, val);
-    }, 500); // 500ms debounce
+    }, 1000);
   };
 
   // Cleanup on unmount/index change
