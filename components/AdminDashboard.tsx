@@ -14,7 +14,7 @@ const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<UserStats[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
-  
+
   // Reset Modals State
   const [resetTargetUser, setResetTargetUser] = useState<string | null>(null);
   const [showSystemReset, setShowSystemReset] = useState(false);
@@ -27,7 +27,7 @@ const AdminDashboard: React.FC = () => {
       const data = await dbService.getAdminStats();
       if (data) setStats(data);
     };
-    
+
     fetchStats();
     const interval = setInterval(fetchStats, 5000); // Polling every 5s
     return () => clearInterval(interval);
@@ -36,10 +36,10 @@ const AdminDashboard: React.FC = () => {
   // Fetch answers when user selected
   useEffect(() => {
     const fetchAnswers = async () => {
-        if (selectedUserId) {
-            const data = await dbService.getAnswersByUser(selectedUserId);
-            if (data) setAnswers(data);
-        }
+      if (selectedUserId) {
+        const data = await dbService.getAnswersByUser(selectedUserId);
+        if (data) setAnswers(data);
+      }
     };
     fetchAnswers();
   }, [selectedUserId]); // Independent fetch, implicit polling via stats update optional but simple here
@@ -84,7 +84,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-brand-darker text-gray-200 font-sans flex flex-col h-screen overflow-hidden relative">
-      
+
       {/* --- MODALS --- */}
       {(resetTargetUser || showSystemReset) && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -92,17 +92,17 @@ const AdminDashboard: React.FC = () => {
             <h3 className="text-xl font-bold text-white mb-4">
               {showSystemReset ? 'DANGER: SYSTEM RESET' : 'Confirm User Reset'}
             </h3>
-            
+
             <p className="text-gray-300 mb-6 text-sm leading-relaxed">
-              {showSystemReset 
-                ? "This will delete ALL sessions, answers, and logs for ALL users. This action cannot be undone." 
+              {showSystemReset
+                ? "This will delete ALL sessions, answers, and logs for ALL users. This action cannot be undone."
                 : "This will wipe all progress, answers, and timers for the selected user. They will start from the beginning."}
             </p>
 
             <div className="mb-6">
               <label className="block text-xs font-bold text-brand-primary uppercase mb-2">Admin Key Required</label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 value={confirmKey}
                 onChange={(e) => setConfirmKey(e.target.value)}
                 className="w-full bg-brand-darker border border-brand-secondary/50 rounded p-3 text-white focus:border-brand-accent focus:outline-none"
@@ -112,7 +112,7 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             <div className="flex justify-end space-x-3">
-              <button 
+              <button
                 onClick={() => {
                   setResetTargetUser(null);
                   setShowSystemReset(false);
@@ -123,7 +123,7 @@ const AdminDashboard: React.FC = () => {
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={showSystemReset ? handleSystemReset : handleResetUser}
                 className={`px-4 py-2 rounded text-white font-bold shadow-lg text-sm ${showSystemReset ? 'bg-red-600 hover:bg-red-700' : 'bg-brand-secondary hover:bg-brand-primary'}`}
               >
@@ -141,8 +141,8 @@ const AdminDashboard: React.FC = () => {
             <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
             <h1 className="text-lg font-bold tracking-widest text-white uppercase">Live Monitor</h1>
           </div>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded text-white transition-colors"
           >
             LOGOUT
@@ -151,13 +151,13 @@ const AdminDashboard: React.FC = () => {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        
+
         {/* Sidebar: Users */}
         <aside className="w-80 border-r border-white/5 bg-brand-darker flex flex-col overflow-y-auto">
           {/* System Controls */}
           <div className="p-4 border-b border-white/5 bg-red-900/10">
             <h2 className="text-xs font-bold text-red-400 uppercase tracking-widest mb-3">System Controls</h2>
-            <button 
+            <button
               onClick={() => setShowSystemReset(true)}
               className="w-full py-2 px-3 bg-red-900/30 border border-red-900/50 hover:bg-red-900/50 text-red-200 text-xs rounded transition-colors font-mono text-center"
             >
@@ -169,14 +169,13 @@ const AdminDashboard: React.FC = () => {
             <h2 className="text-xs font-bold text-brand-secondary uppercase tracking-widest mb-4">Active Personnel</h2>
             <div className="space-y-2">
               {stats.map(s => (
-                <div 
+                <div
                   key={s.user.id}
                   onClick={() => setSelectedUserId(s.user.id)}
-                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                    selectedUserId === s.user.id 
-                      ? 'bg-brand-primary/20 border-brand-accent' 
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${selectedUserId === s.user.id
+                      ? 'bg-brand-primary/20 border-brand-accent'
                       : 'bg-white/5 border-transparent hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className={`font-bold ${selectedUserId === s.user.id ? 'text-brand-accent' : 'text-gray-300'}`}>
@@ -187,18 +186,18 @@ const AdminDashboard: React.FC = () => {
                       <span>{s.isOnline ? 'LIVE' : 'IDLE'}</span>
                     </div>
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden mb-2">
-                    <div 
+                    <div
                       className={`h-full transition-all duration-1000 ${s.session?.isCompleted ? 'bg-green-500' : 'bg-brand-primary'}`}
                       style={{ width: `${(s.answerCount / QUESTIONS.length) * 100}%` }}
                     ></div>
                   </div>
-                  
+
                   <div className="flex justify-between text-[10px] text-gray-500 font-mono items-center">
-                     <span>{Math.round((s.answerCount / QUESTIONS.length) * 100)}% Complete</span>
-                     {s.session?.isCompleted && <span className="text-green-400 font-bold">DONE</span>}
+                    <span>{Math.round((s.answerCount / QUESTIONS.length) * 100)}% Complete</span>
+                    {s.session?.isCompleted && <span className="text-green-400 font-bold">DONE</span>}
                   </div>
                 </div>
               ))}
@@ -210,7 +209,7 @@ const AdminDashboard: React.FC = () => {
         <main className="flex-1 bg-brand-dark/50 p-6 overflow-y-auto">
           {focusStats ? (
             <div className="max-w-4xl mx-auto space-y-6">
-              
+
               {/* Header Card */}
               <div className="bg-brand-darker p-6 rounded-xl border border-white/5 flex justify-between items-center">
                 <div>
@@ -231,8 +230,8 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="text-[10px] text-gray-400 uppercase tracking-widest">Questions Logged</div>
                   </div>
-                  
-                  <button 
+
+                  <button
                     onClick={(e) => { e.stopPropagation(); setResetTargetUser(focusStats.user.id); }}
                     className="ml-4 px-3 py-2 bg-white/5 hover:bg-red-900/50 border border-white/10 hover:border-red-500/50 text-gray-400 hover:text-red-300 rounded text-xs transition-colors"
                   >
@@ -243,39 +242,48 @@ const AdminDashboard: React.FC = () => {
 
               {/* Answers Feed */}
               <div className="space-y-4">
-                 <h3 className="text-xs font-bold text-brand-secondary uppercase tracking-widest">Submission Log</h3>
-                 
-                 {answers.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500 border border-dashed border-gray-700 rounded-lg">
-                      No data submitted yet.
-                    </div>
-                 ) : (
-                    QUESTIONS.map((q) => {
-                      const ans = answers.find(a => a.questionId === q.id);
-                      if (!ans) return null;
-                      
-                      return (
-                        <div key={q.id} className="bg-brand-darker p-5 rounded-lg border border-white/5 hover:border-brand-primary/30 transition-colors">
-                          <div className="flex justify-between items-start mb-3">
-                            <span className="text-xs font-bold text-brand-primary uppercase tracking-wider bg-brand-primary/10 px-2 py-1 rounded">
-                              {q.section}
-                            </span>
-                            <span className="text-xs font-mono text-gray-500">
-                              {Math.round(ans.timeSpent)}s spent
-                            </span>
-                          </div>
-                          
-                          <p className="text-sm text-gray-400 mb-3 italic">
-                             {q.text.en}
-                          </p>
-                          
-                          <div className="text-gray-200 whitespace-pre-wrap leading-relaxed border-l-2 border-brand-accent pl-4">
-                            {ans.answerText}
-                          </div>
+                <h3 className="text-xs font-bold text-brand-secondary uppercase tracking-widest">Submission Log</h3>
+
+                {answers.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500 border border-dashed border-gray-700 rounded-lg">
+                    No data submitted yet.
+                  </div>
+                ) : (
+                  QUESTIONS.map((q) => {
+                    const ans = answers.find(a => a.questionId === q.id);
+                    if (!ans) return null;
+
+                    return (
+                      <div key={q.id} className="bg-brand-darker p-5 rounded-lg border border-white/5 hover:border-brand-primary/30 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <span className="text-xs font-bold text-brand-primary uppercase tracking-wider bg-brand-primary/10 px-2 py-1 rounded">
+                            {q.section}
+                          </span>
+                          <span className="text-xs font-mono text-gray-500">
+                            {Math.round(ans.timeSpent)}s spent
+                          </span>
                         </div>
-                      )
-                    })
-                 )}
+
+                        <p className="text-sm text-gray-400 mb-3 italic">
+                          {q.text.en}
+                        </p>
+
+                        <div className="text-gray-200 whitespace-pre-wrap leading-relaxed border-l-2 border-brand-accent pl-4 font-mono text-sm">
+                          {(() => {
+                            try {
+                              const parsed = JSON.parse(ans.answerText);
+                              if (Array.isArray(parsed)) return parsed.join(', '); // Multi-choice
+                              if (typeof parsed === 'object') return JSON.stringify(parsed, null, 2);
+                              return String(parsed);
+                            } catch {
+                              return ans.answerText;
+                            }
+                          })()}
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </div>
           ) : (

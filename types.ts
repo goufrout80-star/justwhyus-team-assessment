@@ -9,13 +9,36 @@ export enum Language {
   AR = 'ar'
 }
 
+export enum QuestionType {
+  TEXT = 'TEXT',           // Single line input
+  TEXTAREA = 'TEXTAREA',   // Multi-line input (Big box)
+  SINGLE = 'SINGLE',       // Radio buttons (One choice)
+  MULTIPLE = 'MULTIPLE',   // Checkboxes (Multiple choices)
+  SCALE = 'SCALE'          // Slider or Number selection
+}
+
 export interface Question {
   id: number;
   section: string; // "Mindset", "Skills", "Values", "Puzzle"
+  type: QuestionType;
   text: {
     en: string;
     fr?: string;
     ar?: string;
+  };
+  options?: {
+    id: string; // "opt1", "opt2"
+    text: {
+      en: string;
+      fr?: string;
+      ar?: string;
+    };
+  }[];
+  scale?: {
+    min: number;
+    max: number;
+    minLabel?: { en: string; fr: string; ar: string };
+    maxLabel?: { en: string; fr: string; ar: string };
   };
   isPuzzle: boolean;
 }
@@ -24,7 +47,7 @@ export interface Question {
 export interface UserProfile {
   id: string; // _id
   name: string; // username
-  pin: string; 
+  pin: string;
   role: UserRole;
   language?: Language;
   createdAt?: string;
@@ -47,7 +70,7 @@ export interface Answer {
   userId: string;
   questionId: number;
   section: string;
-  answerText: string;
+  answerText: string; // Stores raw text OR JSON.stringify(value) for arrays/numbers
   timeSpent: number; // seconds spent on this specific question
   updatedAt: number;
 }

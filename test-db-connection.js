@@ -3,9 +3,9 @@
  * Run: node test-db-connection.js
  * 
  * Requires MONGODB_URI environment variable to be set
- * Example: set MONGODB_URI=mongodb+srv://... && node test-db-connection.js
  */
 
+require('dotenv').config({ path: '.env.local' });
 const mongoose = require('mongoose');
 
 const MONGODB_URI = process.env.MONGODB_URI;
