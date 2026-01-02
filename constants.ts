@@ -3,11 +3,11 @@ import { Question, UserProfile, UserRole, QuestionType } from './types';
 export const ADMIN_KEY = "bS%83B4+4uAO-#&&UyK;H+";
 
 export const USERS: UserProfile[] = [
-  { id: 'u1', name: 'Mahmoud', role: UserRole.USER },
-  { id: 'u2', name: 'Ismail', role: UserRole.USER },
-  { id: 'u3', name: 'Ayoub', role: UserRole.USER },
-  { id: 'nizar', name: 'Nizar', role: UserRole.USER },
-  { id: 'abdu', name: 'Abdu', role: UserRole.USER },
+  { id: 'u1', name: 'Mahmoud', pin: '77337733w', role: UserRole.USER },
+  { id: 'u2', name: 'Ismail', pin: '77002887p', role: UserRole.USER },
+  { id: 'u3', name: 'Ayoub', pin: '00229900e', role: UserRole.USER },
+  { id: 'nizar', name: 'Nizar', pin: '88994411n', role: UserRole.USER },
+  { id: 'abdu', name: 'Abdu', pin: '11223344a', role: UserRole.USER },
 ];
 
 let qId = 1;

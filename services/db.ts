@@ -21,10 +21,6 @@ async function api(action: string, payload: any = {}, secret?: string) {
 export const dbService = {
   // --- Async Methods for Client Components ---
 
-  auth: async (userId: string, pin: string) => {
-    return await api('login_user', { userId, pin });
-  },
-
   getUser: async (userId: string) => {
     const data = await api('get_user_data', { userId });
     return data; // returns { user, session, answers }

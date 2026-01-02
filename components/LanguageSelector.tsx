@@ -1,48 +1,72 @@
 import React from 'react';
 import { Language } from '../types';
 
-interface Props {
+interface LanguageSelectorProps {
   onSelect: (lang: Language) => void;
 }
 
-const LanguageSelector: React.FC<Props> = ({ onSelect }) => {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-dark/95 backdrop-blur-md animate-fade-in">
-      <div className="bg-brand-darker rounded-[40px] shadow-[0_0_100px_rgba(0,0,0,0.5)] p-12 max-w-md w-full text-center space-y-10 border border-white/5 relative overflow-hidden">
-        {/* Decorative Top Accent */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-secondary via-brand-accent to-brand-secondary"></div>
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onSelect }) => {
+  const languages = [
+    { code: Language.EN, name: 'English', label: 'En', flag: '🇺🇸', desc: 'Enterprise Standard' },
+    { code: Language.FR, name: 'Français', label: 'Fr', flag: '🇫🇷', desc: 'Standard Européen' },
+    { code: Language.AR, name: 'العربية', label: 'Ar', flag: '🇸🇦', desc: 'المعيار العربي' }
+  ];
 
-        <div>
-          <h2 className="text-4xl font-black text-white uppercase tracking-tight">Access Node</h2>
-          <p className="text-brand-primary mt-4 text-[10px] font-bold uppercase tracking-[0.3em] opacity-60">System Protocol: Interface Language</p>
+  return (
+    <div className="min-h-screen bg-brand-darker flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+      {/* Decorative Glows */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-primary/10 blur-[130px] rounded-full -mr-64 -mt-64 animate-pulse"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-secondary/5 blur-[130px] rounded-full -ml-64 -mb-64 animate-pulse" style={{ animationDelay: '2s' }}></div>
+
+      <div className="w-full max-w-4xl relative z-10">
+        <div className="text-center mb-16 animate-fade-in">
+          <div className="flex justify-center mb-6">
+            <div className="w-10 h-10 rounded-lg bg-brand-primary/20 flex items-center justify-center">
+              <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor font-bold"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5a18.022 18.022 0 01-3.827-5.802M12 9a11.959 11.959 0 01-2.683 5.66m.005 0l-.547.547M12 9A11.959 11.959 0 019.018 4.5h2.528M9.018 4.5H3.5m10.5 12h7m-3.5-3.5V21" /></svg>
+            </div>
+          </div>
+          <h2 className="text-4xl font-black text-white mb-2 tracking-tighter">Choose Language</h2>
+          <p className="text-[10px] text-brand-primary font-bold uppercase tracking-[0.4em]">Configuring Localization Modules</p>
         </div>
 
-        <div className="space-y-4">
-          {[
-            { id: Language.EN, label: 'English', sub: 'Primary' },
-            { id: Language.FR, label: 'Français', sub: 'Secondaire' },
-            { id: Language.AR, label: 'العربية', sub: 'البروتوكول الثالث', rtl: true }
-          ].map((lang) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          {languages.map((lang) => (
             <button
-              key={lang.id}
-              onClick={() => onSelect(lang.id)}
-              className="w-full p-6 bg-brand-dark/50 border border-white/5 rounded-3xl hover:border-brand-accent hover:bg-brand-accent/5 hover:shadow-2xl hover:shadow-brand-accent/5 transition-all duration-500 group flex items-center justify-between"
-              dir={lang.rtl ? 'rtl' : 'ltr'}
+              key={lang.code}
+              onClick={() => onSelect(lang.code)}
+              className="group relative flex flex-col items-center p-8 bg-brand-dark/40 backdrop-blur-xl rounded-[40px] border border-white/5 hover:border-brand-primary/40 transition-all duration-500 hover:-translate-y-2 ring-1 ring-white/10 hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
             >
-              <span className={`font-black text-xl text-gray-400 group-hover:text-white tracking-tight ${lang.rtl ? 'font-arabic' : ''}`}>
-                {lang.label}
-              </span>
-              <span className="text-[9px] text-brand-primary opacity-40 group-hover:opacity-100 uppercase tracking-[0.2em] font-black transition-all">
-                {lang.sub}
-              </span>
+              <div className="w-20 h-20 rounded-[28px] bg-white/5 border border-white/10 flex items-center justify-center text-4xl mb-8 group-hover:scale-110 transition-transform duration-500 group-hover:bg-brand-primary/10 group-hover:border-brand-primary/30">
+                {lang.flag}
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-black text-white mb-2 tracking-tight group-hover:text-brand-primary transition-colors">{lang.name}</div>
+                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed whitespace-nowrap">{lang.desc}</div>
+              </div>
+
+              {/* Active Indicator Hover Effect */}
+              <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-brand-primary opacity-0 group-hover:opacity-100 transition-opacity animate-pulse shadow-[0_0_10px_#0070f3]"></div>
             </button>
           ))}
         </div>
 
-        <div className="pt-6 text-[8px] font-mono text-white/5 uppercase tracking-[0.5em]">
-          JustWhyUs Evolutionary Tool
+        <div className="mt-20 flex justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center gap-3 px-6 py-2 bg-white/5 border border-white/5 rounded-full ring-1 ring-white/10">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+            <span className="text-[9px] font-mono text-gray-600 tracking-widest uppercase font-bold">Secure Local Environment Ready</span>
+          </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
     </div>
   );
 };

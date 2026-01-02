@@ -12,18 +12,23 @@ const App: React.FC = () => {
   const [showLangSelector, setShowLangSelector] = useState(false);
   const [appLang, setAppLang] = useState<Language>(Language.EN);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Handle successful user login
   const handleUserLogin = async (loggedInUser: UserProfile) => {
     setIsLoading(true);
     setUser(loggedInUser);
-    
+
     try {
       // Fetch fresh data from server
       const data = await dbService.getUser(loggedInUser.id);
-      
+
       if (data && data.user && data.user.language) {
-        setAppLang(data.user.language);
+        setAppLang(data.user.language as Language);
         setShowLangSelector(false);
       } else {
         setShowLangSelector(true);
@@ -47,6 +52,8 @@ const App: React.FC = () => {
     }
     setShowLangSelector(false);
   };
+
+  if (!mounted) return null;
 
   if (isLoading) {
     return (

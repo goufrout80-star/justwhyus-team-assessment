@@ -47,7 +47,7 @@ export interface Question {
 export interface UserProfile {
   id: string; // _id
   name: string; // username
-  pin?: string; // Optional (hidden on frontend)
+  pin: string;
   role: UserRole;
   language?: Language;
   createdAt?: string;
