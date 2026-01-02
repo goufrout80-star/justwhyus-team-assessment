@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JustWhyUs Team Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              arabic: ['Noto Kufi Arabic', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                primary: '#849A92',   // Muted Green/Grey
+                secondary: '#3F6967', // Deep Teal
+                accent: '#28E8B5',    // Bright Mint
+                dark: '#063738',      // Very Dark Teal
+                darker: '#09201E',    // Almost Black
+                surface: '#F5F7F6',   // Light background for cards
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        background-color: #F5F7F6; /* Matches brand-surface */
+        color: #09201E; /* Matches brand-darker */
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Smooth transitions for inputs */
+      input, textarea, button {
+        transition: all 0.2s ease-in-out;
+      }
+      
+      /* Custom Scrollbar for a premium feel */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #F5F7F6; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #849A92; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #3F6967; 
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "next/": "https://esm.sh/next@^16.1.1/",
+    "next": "https://esm.sh/next@^16.1.1",
+    "mongoose": "https://esm.sh/mongoose@^9.1.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
