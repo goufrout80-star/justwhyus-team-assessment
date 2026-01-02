@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { dbService } from '../services/db';
 import { UserProfile, Session, Answer } from '../types';
 import { QUESTIONS, ADMIN_KEY } from '../constants';
@@ -42,11 +42,27 @@ const AdminDashboard: React.FC = () => {
       }
     };
     fetchAnswers();
-  }, [selectedUserId]); // Independent fetch, implicit polling via stats update optional but simple here
+  }, [selectedUserId]);
 
   const focusStats = stats.find(s => s.user.id === selectedUserId);
 
-  // --- Reset Handlers ---
+  // Psychometric Calculations (The New Functions)
+  const psychMetrics = useMemo(() => {
+    if (!focusStats || !focusStats.session) return null;
+    const s = focusStats.session as any;
+    const totalTime = s.totalTimeSpent || 1;
+    const efficiency = Math.round((focusStats.answerCount / (totalTime / 60)) * 10) / 10;
+
+    return {
+      efficiency,
+      distraction: s.blurCount || 0,
+      reconsideration: s.backtrackCount || 0,
+      sessions: s.loginCount || 1,
+      sectionTimes: s.sectionTimes || {}
+    };
+  }, [focusStats]);
+
+  // --- Handlers ---
 
   const handleResetUser = async () => {
     if (confirmKey !== ADMIN_KEY) {
@@ -61,7 +77,6 @@ const AdminDashboard: React.FC = () => {
       if (selectedUserId === resetTargetUser) {
         setAnswers([]);
       }
-      // Refresh
       const data = await dbService.getAdminStats();
       if (data) setStats(data);
     }
@@ -82,6 +97,19 @@ const AdminDashboard: React.FC = () => {
     if (data) setStats(data);
   };
 
+  const handleExportData = async () => {
+    const data = await dbService.exportAllData();
+    if (data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `justwhyus_export_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-brand-darker text-gray-200 font-sans flex flex-col h-screen overflow-hidden relative">
 
@@ -96,7 +124,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-gray-300 mb-6 text-sm leading-relaxed">
               {showSystemReset
                 ? "This will delete ALL sessions, answers, and logs for ALL users. This action cannot be undone."
-                : "This will wipe all progress, answers, and timers for the selected user. They will start from the beginning."}
+                : "This will wipe all progress, answers, and timers for the selected user."}
             </p>
 
             <div className="mb-6">
@@ -141,12 +169,20 @@ const AdminDashboard: React.FC = () => {
             <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
             <h1 className="text-lg font-bold tracking-widest text-white uppercase">Live Monitor</h1>
           </div>
-          <button
-            onClick={() => window.location.reload()}
-            className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded text-white transition-colors"
-          >
-            LOGOUT
-          </button>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleExportData}
+              className="text-[10px] font-bold bg-white/5 hover:bg-brand-primary/20 px-3 py-1 rounded text-white transition-colors border border-white/10"
+            >
+              EXPORT JSON
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded text-white transition-colors"
+            >
+              LOGOUT
+            </button>
+          </div>
         </div>
       </header>
 
@@ -155,13 +191,12 @@ const AdminDashboard: React.FC = () => {
         {/* Sidebar: Users */}
         <aside className="w-80 border-r border-white/5 bg-brand-darker flex flex-col overflow-y-auto">
           {/* System Controls */}
-          <div className="p-4 border-b border-white/5 bg-red-900/10">
-            <h2 className="text-xs font-bold text-red-400 uppercase tracking-widest mb-3">System Controls</h2>
+          <div className="p-4 border-b border-white/5 bg-red-900/10 text-center">
             <button
               onClick={() => setShowSystemReset(true)}
-              className="w-full py-2 px-3 bg-red-900/30 border border-red-900/50 hover:bg-red-900/50 text-red-200 text-xs rounded transition-colors font-mono text-center"
+              className="w-full py-2 px-3 bg-red-900/30 border border-red-900/50 hover:bg-red-900/50 text-red-200 text-[10px] rounded transition-colors font-bold uppercase tracking-widest"
             >
-              ⚠ RESET ENTIRE SYSTEM
+              ⚠ SYSTEM RESET
             </button>
           </div>
 
@@ -173,8 +208,8 @@ const AdminDashboard: React.FC = () => {
                   key={s.user.id}
                   onClick={() => setSelectedUserId(s.user.id)}
                   className={`p-4 rounded-lg border cursor-pointer transition-all ${selectedUserId === s.user.id
-                      ? 'bg-brand-primary/20 border-brand-accent'
-                      : 'bg-white/5 border-transparent hover:bg-white/10'
+                    ? 'bg-brand-primary/20 border-brand-accent'
+                    : 'bg-white/5 border-transparent hover:bg-white/10'
                     }`}
                 >
                   <div className="flex justify-between items-center mb-2">
@@ -220,7 +255,7 @@ const AdminDashboard: React.FC = () => {
                     )}
                   </h2>
                   <p className="text-xs text-brand-primary font-mono uppercase">
-                    ID: {focusStats.user.id} • Started: {focusStats.session ? new Date(focusStats.session.startedAt).toLocaleString() : 'N/A'}
+                    ID: {focusStats.user.id} • Lang: {focusStats.user.language || 'EN'}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -228,15 +263,35 @@ const AdminDashboard: React.FC = () => {
                     <div className="text-3xl font-light text-brand-accent font-mono">
                       {focusStats.answerCount}
                     </div>
-                    <div className="text-[10px] text-gray-400 uppercase tracking-widest">Questions Logged</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-widest">Logged</div>
                   </div>
 
                   <button
                     onClick={(e) => { e.stopPropagation(); setResetTargetUser(focusStats.user.id); }}
                     className="ml-4 px-3 py-2 bg-white/5 hover:bg-red-900/50 border border-white/10 hover:border-red-500/50 text-gray-400 hover:text-red-300 rounded text-xs transition-colors"
                   >
-                    Reset User
+                    Reset
                   </button>
+                </div>
+              </div>
+
+              {/* Psychology Metrics (Enhanced UI in Old Layout) */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-brand-darker border border-white/5 p-4 rounded-lg">
+                  <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Efficiency</div>
+                  <div className="text-xl font-bold text-brand-primary">{psychMetrics?.efficiency} <span className="text-[10px]">A/m</span></div>
+                </div>
+                <div className="bg-brand-darker border border-white/5 p-4 rounded-lg">
+                  <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Distractions</div>
+                  <div className="text-xl font-bold text-yellow-500">{psychMetrics?.distraction}</div>
+                </div>
+                <div className="bg-brand-darker border border-white/5 p-4 rounded-lg">
+                  <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Backtracks</div>
+                  <div className="text-xl font-bold text-blue-500">{psychMetrics?.reconsideration}</div>
+                </div>
+                <div className="bg-brand-darker border border-white/5 p-4 rounded-lg">
+                  <div className="text-[10px] text-gray-500 uppercase font-bold mb-1">Logins</div>
+                  <div className="text-xl font-bold text-green-500">{psychMetrics?.sessions}</div>
                 </div>
               </div>
 
@@ -256,10 +311,10 @@ const AdminDashboard: React.FC = () => {
                     return (
                       <div key={q.id} className="bg-brand-darker p-5 rounded-lg border border-white/5 hover:border-brand-primary/30 transition-colors">
                         <div className="flex justify-between items-start mb-3">
-                          <span className="text-xs font-bold text-brand-primary uppercase tracking-wider bg-brand-primary/10 px-2 py-1 rounded">
+                          <span className="text-[10px] font-bold text-brand-primary uppercase tracking-wider bg-brand-primary/10 px-2 py-1 rounded">
                             {q.section}
                           </span>
-                          <span className="text-xs font-mono text-gray-500">
+                          <span className="text-[10px] font-mono text-gray-500">
                             {Math.round(ans.timeSpent)}s spent
                           </span>
                         </div>

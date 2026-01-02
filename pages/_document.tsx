@@ -41,8 +41,8 @@ export default function Document() {
         }} />
         <style>{`
           body {
-            background-color: #F5F7F6;
-            color: #09201E;
+            background-color: #09201E;
+            color: #F5F7F6;
             -webkit-font-smoothing: antialiased;
           }
           input, textarea, button { transition: all 0.2s ease-in-out; }

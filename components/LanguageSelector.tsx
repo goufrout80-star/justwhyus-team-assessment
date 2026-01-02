@@ -7,40 +7,40 @@ interface Props {
 
 const LanguageSelector: React.FC<Props> = ({ onSelect }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-darker/95 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-md w-full text-center space-y-8 relative overflow-hidden">
-        {/* Decorative Top Line */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand-secondary via-brand-accent to-brand-secondary"></div>
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-dark/95 backdrop-blur-md animate-fade-in">
+      <div className="bg-brand-darker rounded-[40px] shadow-[0_0_100px_rgba(0,0,0,0.5)] p-12 max-w-md w-full text-center space-y-10 border border-white/5 relative overflow-hidden">
+        {/* Decorative Top Accent */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-secondary via-brand-accent to-brand-secondary"></div>
+
         <div>
-          <h2 className="text-3xl font-bold text-brand-darker">Welcome</h2>
-          <p className="text-brand-primary mt-3 text-sm">Please select your preferred interface language to begin the assessment.</p>
+          <h2 className="text-4xl font-black text-white uppercase tracking-tight">Access Node</h2>
+          <p className="text-brand-primary mt-4 text-[10px] font-bold uppercase tracking-[0.3em] opacity-60">System Protocol: Interface Language</p>
         </div>
-        
-        <div className="space-y-3">
+
+        <div className="space-y-4">
           {[
-            { id: Language.EN, label: 'English', sub: 'Default' },
-            { id: Language.FR, label: 'Français', sub: 'Sélectionner' },
-            { id: Language.AR, label: 'العربية', sub: 'اختر اللغة', rtl: true }
+            { id: Language.EN, label: 'English', sub: 'Primary' },
+            { id: Language.FR, label: 'Français', sub: 'Secondaire' },
+            { id: Language.AR, label: 'العربية', sub: 'البروتوكول الثالث', rtl: true }
           ].map((lang) => (
             <button
               key={lang.id}
               onClick={() => onSelect(lang.id)}
-              className="w-full p-4 border border-gray-100 rounded-xl hover:border-brand-accent hover:bg-brand-surface hover:shadow-md transition-all duration-300 group flex items-center justify-between"
+              className="w-full p-6 bg-brand-dark/50 border border-white/5 rounded-3xl hover:border-brand-accent hover:bg-brand-accent/5 hover:shadow-2xl hover:shadow-brand-accent/5 transition-all duration-500 group flex items-center justify-between"
               dir={lang.rtl ? 'rtl' : 'ltr'}
             >
-              <span className={`font-semibold text-lg text-gray-700 group-hover:text-brand-darker ${lang.rtl ? 'font-arabic' : ''}`}>
+              <span className={`font-black text-xl text-gray-400 group-hover:text-white tracking-tight ${lang.rtl ? 'font-arabic' : ''}`}>
                 {lang.label}
               </span>
-              <span className="text-xs text-gray-400 group-hover:text-brand-secondary uppercase tracking-wider font-medium">
+              <span className="text-[9px] text-brand-primary opacity-40 group-hover:opacity-100 uppercase tracking-[0.2em] font-black transition-all">
                 {lang.sub}
               </span>
             </button>
           ))}
         </div>
-        
-        <div className="pt-4 text-[10px] text-gray-300 uppercase tracking-widest">
-          JustWhyUs Team Assessment
+
+        <div className="pt-6 text-[8px] font-mono text-white/5 uppercase tracking-[0.5em]">
+          JustWhyUs Evolutionary Tool
         </div>
       </div>
     </div>

@@ -17,7 +17,18 @@ const SessionSchema = new Schema({
   lastActiveAt: { type: Number, default: Date.now },
   totalTimeSpent: { type: Number, default: 0 },
   isCompleted: { type: Boolean, default: false },
-  completedAt: Number
+  completedAt: Number,
+
+  // Analytics
+  loginCount: { type: Number, default: 1 },
+  backtrackCount: { type: Number, default: 0 },
+  blurCount: { type: Number, default: 0 }, // Distraction tracking
+  sectionTimes: {
+    Mindset: { type: Number, default: 0 },
+    Skills: { type: Number, default: 0 },
+    Values: { type: Number, default: 0 },
+    'Logic & Reasoning': { type: Number, default: 0 }
+  }
 });
 
 const AnswerSchema = new Schema({

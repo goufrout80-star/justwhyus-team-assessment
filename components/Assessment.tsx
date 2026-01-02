@@ -183,6 +183,7 @@ const Assessment: React.FC<Props> = ({ user, initialLanguage }) => {
 
   const handlePrev = () => {
     if (currentIndex > 0) {
+      if (user) dbService.logEvent(user.id, 'backtrack');
       setCurrentIndex(prev => prev - 1);
       window.scrollTo(0, 0);
     }

@@ -21,6 +21,10 @@ async function api(action: string, payload: any = {}, secret?: string) {
 export const dbService = {
   // --- Async Methods for Client Components ---
 
+  auth: async (userId: string, pin: string) => {
+    return await api('login_user', { userId, pin });
+  },
+
   getUser: async (userId: string) => {
     const data = await api('get_user_data', { userId });
     return data; // returns { user, session, answers }
@@ -35,13 +39,17 @@ export const dbService = {
   },
 
   saveAnswer: async (userId: string, questionId: number, section: string, answerText: string, timeSpent: number, currentIndex: number) => {
-    return await api('save_progress', { 
-      userId, questionId, section, answerText, timeSpent, currentIndex 
+    return await api('save_progress', {
+      userId, questionId, section, answerText, timeSpent, currentIndex
     });
   },
 
   heartbeat: async (userId: string) => {
     return await api('heartbeat', { userId });
+  },
+
+  logEvent: async (userId: string, event: 'backtrack' | 'blur') => {
+    return await api('log_event', { userId, event });
   },
 
   completeSession: async (userId: string) => {
@@ -64,5 +72,9 @@ export const dbService = {
 
   resetSystem: async (adminId: string) => {
     return await api('admin_reset_system', { adminId }, ADMIN_KEY);
+  },
+
+  exportAllData: async () => {
+    return await api('admin_export', {}, ADMIN_KEY);
   }
 };

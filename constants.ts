@@ -3,9 +3,11 @@ import { Question, UserProfile, UserRole, QuestionType } from './types';
 export const ADMIN_KEY = "bS%83B4+4uAO-#&&UyK;H+";
 
 export const USERS: UserProfile[] = [
-  { id: 'u1', name: 'Mahmoud', pin: '77337733w', role: UserRole.USER },
-  { id: 'u2', name: 'Ismail', pin: '77002887p', role: UserRole.USER },
-  { id: 'u3', name: 'Ayoub', pin: '00229900e', role: UserRole.USER },
+  { id: 'u1', name: 'Mahmoud', role: UserRole.USER },
+  { id: 'u2', name: 'Ismail', role: UserRole.USER },
+  { id: 'u3', name: 'Ayoub', role: UserRole.USER },
+  { id: 'nizar', name: 'Nizar', role: UserRole.USER },
+  { id: 'abdu', name: 'Abdu', role: UserRole.USER },
 ];
 
 let qId = 1;
@@ -46,12 +48,15 @@ const createChoice = (en: string, fr: string, ar: string, section: string, optio
   isPuzzle: false
 });
 
-const createPuzzle = (en: string, type: QuestionType = QuestionType.SINGLE, options: any[] = []): Question => ({
+const createPuzzle = (en: string, fr: string, ar: string, type: QuestionType = QuestionType.SINGLE, options: any[] = []): Question => ({
   id: qId++,
   section: 'Logic & Reasoning',
   type,
-  text: { en, fr: en + " (Logique)", ar: en + " (منطق)" },
-  options: options.length ? options.map((o, i) => ({ id: `popt_${i}`, text: { en: o, fr: o, ar: o } })) : undefined,
+  text: { en, fr, ar },
+  options: options.length ? options.map((o, i) => ({
+    id: `popt_${i}`,
+    text: o
+  })) : undefined,
   isPuzzle: true
 });
 
@@ -102,7 +107,7 @@ export const QUESTIONS: Question[] = [
   ]),
   createScale("Confidence level in difficult situations?", "Niveau de confiance dans les situations difficiles ?", "مستوى الثقة في المواقف الصعبة؟", "Mindset"),
   createChoice("Do you trust your intuition?", "Fais-tu confiance à ton intuition ?", "هل تثق بحدسك؟", "Mindset", OPT_FREQ),
-  createChoice("Are you a perfectionist?", "Es-tu perfectionniste ?", "هل أنت مثالي؟", "Mindset", OPT_YES_NO),
+  createChoice("Are you a perfectionist?", "Es-tu perfectionنiste ?", "هل أنت مثالي؟", "Mindset", OPT_YES_NO),
   createScale("How competitive are you?", "À quel point es-tu compétitif ?", "ما مدى تنافسيتك؟", "Mindset"),
   createChoice("Do you dwell on past mistakes?", "Ressasses-tu les erreurs passées ?", "هل تفكر كثيراً في أخطاء الماضي؟", "Mindset", OPT_FREQ),
 
@@ -246,48 +251,368 @@ export const QUESTIONS: Question[] = [
 
   // --- PUZZLES (40 Total) ---
   // Selectable Logic (20)
-  createPuzzle("What has keys but opens no locks?", QuestionType.SINGLE, ["Piano", "Map", "Monkey", "Banana"]),
-  createPuzzle("I speak without a mouth and hear without ears. I have no body, but I come alive with wind.", QuestionType.SINGLE, ["Echo", "Ghost", "Radio", "Cloud"]),
-  createPuzzle("The more you take, the more you leave behind.", QuestionType.SINGLE, ["Footsteps", "Time", "Money", "Memories"]),
-  createPuzzle("What has a head and a tail but no body?", QuestionType.SINGLE, ["Coin", "Snake", "Worm", "Comet"]),
-  createPuzzle("What comes once in a minute, twice in a moment, but never in a thousand years?", QuestionType.SINGLE, ["The letter M", "Time", "Chance", "Lightning"]),
-  createPuzzle("David's father has three sons: Snap, Crackle, and...?", QuestionType.SINGLE, ["David", "Pop", "Mike", "Tom"]),
-  createPuzzle("What gets wet while drying?", QuestionType.SINGLE, ["Towel", "Water", "Fish", "Sponge"]),
-  createPuzzle("I have cities, but no houses. I have mountains, but no trees. I have water, but no fish.", QuestionType.SINGLE, ["Map", "Globe", "Dream", "Book"]),
-  createPuzzle("What belongs to you, but other people use it more than you?", QuestionType.SINGLE, ["Your Name", "Your Money", "Your Car", "Your House"]),
-  createPuzzle("If you drop me I'm sure to crack, but give me a smile and I'll always smile back.", QuestionType.SINGLE, ["Mirror", "Egg", "Glass", "Phone"]),
-  createPuzzle("What goes up but never comes down?", QuestionType.SINGLE, ["Age", "Balloon", "Smoke", "Bird"]),
-  createPuzzle("I am full of holes but still hold water.", QuestionType.SINGLE, ["Sponge", "Net", "Bucket", "Cheese"]),
-  createPuzzle("What is always in front of you but can't be seen?", QuestionType.SINGLE, ["Future", "Air", "Nose", "Glasses"]),
-  createPuzzle("What can you break, even if you never pick it up or touch it?", QuestionType.SINGLE, ["Promise", "Glass", "Silence", "Record"]),
-  createPuzzle("I shave every day, but my beard stays the same. What am I?", QuestionType.SINGLE, ["Barber", "Lion", "Magic", "Razor"]),
-  createPuzzle("The person who makes it has no need of it; the person who buys it has no use for it.", QuestionType.SINGLE, ["Coffin", "Trash", "Poison", "Nothing"]),
-  createPuzzle("What has to be broken before you can use it?", QuestionType.SINGLE, ["Egg", "Glowstick", "Promise", "Code"]),
-  createPuzzle("I’m tall when I’m young, and I’m short when I’m old.", QuestionType.SINGLE, ["Candle", "Tree", "Pencil", "Man"]),
-  createPuzzle("What represents the number 0 but implies everything?", QuestionType.SINGLE, ["Circle", "Void", "Space", "Time"]),
-  createPuzzle("Which month has 28 days?", QuestionType.SINGLE, ["All of them", "February", "None", "January"]),
+  createPuzzle(
+    "What has keys but opens no locks?",
+    "Qu'est-ce qui a des clés mais n'ouvre aucune serrure ?",
+    "ما الذي له مفاتيح ولكن لا يفتح أي أقفال؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Piano", fr: "Piano", ar: "بيانو" },
+      { en: "Map", fr: "Carte", ar: "خريطة" },
+      { en: "Monkey", fr: "Singe", ar: "قرد" },
+      { en: "Banana", fr: "Banane", ar: "موز" }
+    ]
+  ),
+  createPuzzle(
+    "I speak without a mouth and hear without ears. I have no body, but I come alive with wind.",
+    "Je parle sans bouche et j'entends sans oreilles. Je n'ai pas de corps, mais je m'anime avec le vent.",
+    "أتكلم بلا فم وأسمع بلا أذنين. ليس لي جسد، لكنني أحيى مع الريح.",
+    QuestionType.SINGLE,
+    [
+      { en: "Echo", fr: "Écho", ar: "الصدى" },
+      { en: "Ghost", fr: "Fantôme", ar: "شبح" },
+      { en: "Radio", fr: "Radio", ar: "مذياع" },
+      { en: "Cloud", fr: "Nuage", ar: "سحابة" }
+    ]
+  ),
+  createPuzzle(
+    "The more you take, the more you leave behind.",
+    "Plus tu en prends, plus tu en laisses derrière toi.",
+    "كلما أخذت منها، كلما تركت وراءك أكثر.",
+    QuestionType.SINGLE,
+    [
+      { en: "Footsteps", fr: "Pas", ar: "خطوات" },
+      { en: "Time", fr: "Temps", ar: "وقت" },
+      { en: "Money", fr: "Argent", ar: "مال" },
+      { en: "Memories", fr: "Souvenirs", ar: "ذكريات" }
+    ]
+  ),
+  createPuzzle(
+    "What has a head and a tail but no body?",
+    "Qu'est-ce qui a une tête et une queue mais pas de corps ?",
+    "ما الذي له رأس وذيل ولكن ليس له جسد؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Coin", fr: "Pièce de monnaie", ar: "عملة معدنية" },
+      { en: "Snake", fr: "Serpent", ar: "ثعبان" },
+      { en: "Worm", fr: "Ver", ar: "دودة" },
+      { en: "Comet", fr: "Comète", ar: "مذنب" }
+    ]
+  ),
+  createPuzzle(
+    "What comes once in a minute, twice in a moment, but never in a thousand years?",
+    "Qu'est-ce qui vient une fois par minute, deux fois par moment, mais jamais en mille ans ?",
+    "ما الذي يأتي مرة في الدقيقة، ومرتين في اللحظة، ولكن لا يأتي أبداً في ألف سنة؟",
+    QuestionType.SINGLE,
+    [
+      { en: "The letter M", fr: "La lettre M", ar: "حرف الميم" },
+      { en: "Time", fr: "Le temps", ar: "الوقت" },
+      { en: "Chance", fr: "La chance", ar: "الصدفة" },
+      { en: "Lightning", fr: "La foudre", ar: "البرق" }
+    ]
+  ),
+  createPuzzle(
+    "David's father has three sons: Snap, Crackle, and...?",
+    "Le père de David a trois fils : Snap, Crackle et... ?",
+    "والد ديفيد لديه ثلاثة أبناء: سناب، كراكل، و...؟",
+    QuestionType.SINGLE,
+    [
+      { en: "David", fr: "David", ar: "ديفيد" },
+      { en: "Pop", fr: "Pop", ar: "بوب" },
+      { en: "Mike", fr: "Mike", ar: "مايك" },
+      { en: "Tom", fr: "Tom", ar: "توم" }
+    ]
+  ),
+  createPuzzle(
+    "What gets wet while drying?",
+    "Qu'est-ce qui se mouille en séchant ?",
+    "ما الذي يبتل أثناء التجفيف؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Towel", fr: "Serviette", ar: "منشفة" },
+      { en: "Water", fr: "Eau", ar: "ماء" },
+      { en: "Fish", fr: "Poisson", ar: "سمكة" },
+      { en: "Sponge", fr: "Éponge", ar: "إسفنجة" }
+    ]
+  ),
+  createPuzzle(
+    "I have cities, but no houses. I have mountains, but no trees. I have water, but no fish.",
+    "J'ai des villes, mais pas de maisons. J'ai des montagnes, mais pas d'arbres. J'ai de l'eau, mais pas de poissons.",
+    "لدي مدن، ولكن لا منازل. لدي جبال، ولكن لا أشجار. لدي ماء، ولكن لا أسماك.",
+    QuestionType.SINGLE,
+    [
+      { en: "Map", fr: "Carte", ar: "خريطة" },
+      { en: "Globe", fr: "Globe", ar: "مجسم أرضي" },
+      { en: "Dream", fr: "Rêve", ar: "حلم" },
+      { en: "Book", fr: "Livre", ar: "كتاب" }
+    ]
+  ),
+  createPuzzle(
+    "What belongs to you, but other people use it more than you?",
+    "Qu'est-ce qui t'appartient, mais que les autres utilisent plus que toi ?",
+    "ما الذي يخصك، ولكن الناس يستخدمونه أكثر منك؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Your Name", fr: "Ton Prénom", ar: "اسمك" },
+      { en: "Your Money", fr: "Ton Argent", ar: "مالك" },
+      { en: "Your Car", fr: "Ta Voiture", ar: "سيارتك" },
+      { en: "Your House", fr: "Ta Maison", ar: "منزلك" }
+    ]
+  ),
+  createPuzzle(
+    "If you drop me I'm sure to crack, but give me a smile and I'll always smile back.",
+    "Si tu me laisses tomber je casse, mais souris-moi et je te sourirai en retour.",
+    "إذا أسقطتني سأنكسر بالتأكيد، لكن ابتسم لي وسأبتسم لك دائمًا.",
+    QuestionType.SINGLE,
+    [
+      { en: "Mirror", fr: "Miroir", ar: "مرآة" },
+      { en: "Egg", fr: "Oeuf", ar: "بيضة" },
+      { en: "Glass", fr: "Verre", ar: "زجاج" },
+      { en: "Phone", fr: "Téléphone", ar: "هاتف" }
+    ]
+  ),
+  createPuzzle(
+    "What goes up but never comes down?",
+    "Qu'est-ce qui monte mais ne redescend jamais ?",
+    "ما الذي يصعد ولا ينزل أبداً؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Age", fr: "L'âge", ar: "العمر" },
+      { en: "Balloon", fr: "Ballon", ar: "بالون" },
+      { en: "Smoke", fr: "Fumée", ar: "دخان" },
+      { en: "Bird", fr: "Oiseau", ar: "طائر" }
+    ]
+  ),
+  createPuzzle(
+    "I am full of holes but still hold water.",
+    "Je suis plein de trous mais je retiens encore l'eau.",
+    "أنا مليء بالثقوب ولكني ما زلت أحمل الماء.",
+    QuestionType.SINGLE,
+    [
+      { en: "Sponge", fr: "Éponge", ar: "إسفنجة" },
+      { en: "Net", fr: "Filet", ar: "شبكة" },
+      { en: "Bucket", fr: "Seau", ar: "دلو" },
+      { en: "Cheese", fr: "Fromage", ar: "جبن" }
+    ]
+  ),
+  createPuzzle(
+    "What is always in front of you but can't be seen?",
+    "Qu'est-ce qui est toujours devant toi mais ne peut être vu ?",
+    "ما الذي يكون دائما أمامك ولكن لا يمكن رؤيته؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Future", fr: "Le Futur", ar: "المستقبل" },
+      { en: "Air", fr: "L'air", ar: "الهواء" },
+      { en: "Nose", fr: "Le nez", ar: "الأنف" },
+      { en: "Glasses", fr: "Lunettes", ar: "النظارات" }
+    ]
+  ),
+  createPuzzle(
+    "What can you break, even if you never pick it up or touch it?",
+    "Qu'est-ce que tu peux briser, même sans jamais le toucher ?",
+    "ما الذي يمكنك كسره، حتى لو لم تلمسه أبداً؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Promise", fr: "Promesse", ar: "وعد" },
+      { en: "Glass", fr: "Verre", ar: "زجاج" },
+      { en: "Silence", fr: "Silence", ar: "صمت" },
+      { en: "Record", fr: "Record", ar: "رقم قياسي" }
+    ]
+  ),
+  createPuzzle(
+    "I shave every day, but my beard stays the same. What am I?",
+    "Je me rase tous les jours, mais ma barbe reste la même. Qui suis-je ?",
+    "أحلق كل يوم، لكن لحيتي تبقى كما هي. من أنا؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Barber", fr: "Barbier", ar: "حلاق" },
+      { en: "Lion", fr: "Lion", ar: "أسد" },
+      { en: "Magic", fr: "Magicien", ar: "ساحر" },
+      { en: "Razor", fr: "Rasoir", ar: "موس" }
+    ]
+  ),
+  createPuzzle(
+    "The person who makes it has no need of it; the person who buys it has no use for it.",
+    "Celui qui le fabrique n'en a pas besoin; celui qui l'achète ne s'en sert pas.",
+    "الشخص الذي يصنعه لا يحتاجه؛ والشخص الذي يشتريه لا يستخدمه.",
+    QuestionType.SINGLE,
+    [
+      { en: "Coffin", fr: "Cercueil", ar: "تابوت" },
+      { en: "Trash", fr: "Poubelle", ar: "قمامة" },
+      { en: "Poison", fr: "Poison", ar: "سم" },
+      { en: "Nothing", fr: "Rien", ar: "لا شيء" }
+    ]
+  ),
+  createPuzzle(
+    "What has to be broken before you can use it?",
+    "Qu'est-ce qui doit être cassé avant de pouvoir l'utiliser ?",
+    "ما الذي يجب كسره قبل أن تتمكن من استخدامه؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Egg", fr: "Oeuf", ar: "بيضة" },
+      { en: "Glowstick", fr: "Bâton lumineux", ar: "عصا مضيئة" },
+      { en: "Promise", fr: "Promesse", ar: "وعد" },
+      { en: "Code", fr: "Code", ar: "شفرة" }
+    ]
+  ),
+  createPuzzle(
+    "I’m tall when I’m young, and I’m short when I’m old.",
+    "Je suis grand quand je suis jeune, et petit quand je suis vieux.",
+    "أنا طويل عندما أكون صغيراً، وقصير عندما أكبر.",
+    QuestionType.SINGLE,
+    [
+      { en: "Candle", fr: "Bougie", ar: "شمعة" },
+      { en: "Tree", fr: "Arbre", ar: "شجرة" },
+      { en: "Pencil", fr: "Crayon", ar: "قلم رصاص" },
+      { en: "Man", fr: "Homme", ar: "رجل" }
+    ]
+  ),
+  createPuzzle(
+    "What represents the number 0 but implies everything?",
+    "Qu'est-ce qui représente le chiffre 0 mais implique tout ?",
+    "ما الذي يمثل الرقم 0 ولكنه يعني كل شيء؟",
+    QuestionType.SINGLE,
+    [
+      { en: "Circle", fr: "Cercle", ar: "دائرة" },
+      { en: "Void", fr: "Vide", ar: "فراغ" },
+      { en: "Space", fr: "Espace", ar: "فضاء" },
+      { en: "Time", fr: "Temps", ar: "وقت" }
+    ]
+  ),
+  createPuzzle(
+    "Which month has 28 days?",
+    "Quel mois a 28 jours ?",
+    "أي شهر يحتوي على 28 يوماً؟",
+    QuestionType.SINGLE,
+    [
+      { en: "All of them", fr: "Tous", ar: "كلهم" },
+      { en: "February", fr: "Février", ar: "فبراير" },
+      { en: "None", fr: "Aucun", ar: "لا أحد" },
+      { en: "January", fr: "Janvier", ar: "يناير" }
+    ]
+  ),
 
   // Short Text Scenario (10)
-  createPuzzle("If you were invisible for a day, what's provided first?", QuestionType.TEXT),
-  createPuzzle("Train A leaves north, Train B leaves south. When do they meet?", QuestionType.TEXT),
-  createPuzzle("If 5 machines take 5 minutes to make 5 widgets, how long for 100 machines for 100 widgets?", QuestionType.TEXT),
-  createPuzzle("A bat and a ball cost $1.10. The bat costs $1.00 more than the ball. How much is the ball?", QuestionType.TEXT),
-  createPuzzle("Forward I am heavy, backward I am not. What am I?", QuestionType.TEXT),
-  createPuzzle("What 5-letter word becomes shorter when you add two letters to it?", QuestionType.TEXT),
-  createPuzzle("You see a boat filled with people, yet there is not a single person on board. How?", QuestionType.TEXT),
-  createPuzzle("What starts with T, ends with T, and has T in it?", QuestionType.TEXT),
-  createPuzzle("Where does today come before yesterday?", QuestionType.TEXT),
-  createPuzzle("What has 13 hearts but no other organs?", QuestionType.TEXT),
+  createPuzzle(
+    "If you were invisible for a day, what's provided first?",
+    "Si tu étais invisible pour un jour, que ferais-tu en premier ?",
+    "لو كنت غير مرئي ليوم واحد، ماذا تفعل أولاً؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "Train A leaves north, Train B leaves south. When do they meet?",
+    "Train A part au nord, Train B au sud. Quand se croisent-ils ?",
+    "القطار أ يتجه شمالاً، القطار ب جنوباً. متى يتقابلان؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "If 5 machines take 5 minutes to make 5 widgets, how long for 100 machines for 100 widgets?",
+    "Si 5 machines prennent 5 min pour 5 objets, combien pour 100 machines pour 100 objets ?",
+    "إذا استغرقت 5 آلات 5 دقائق لصنع 5 قطع، فكم تستغرق 100 آلة لصنع 100 قطعة؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "A bat and a ball cost $1.10. The bat costs $1.00 more than the ball. How much is the ball?",
+    "Une batte et une balle coûtent 1,10$. La batte coûte 1,00$ de plus que la balle. Prix de la balle ?",
+    "مضرب وكرة يكلفان 1.10 دولار. المضرب يكلف 1.00 دولار أكثر من الكرة. كم ثمن الكرة؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "Forward I am heavy, backward I am not. What am I?",
+    "En avant je suis lourd, en arrière je ne le suis pas. Qui suis-je ?",
+    "إلى الأمام أنا ثقيل، وإلى الخلف لست كذلك. من أنا؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "What 5-letter word becomes shorter when you add two letters to it?",
+    "Quel mot de 5 lettres devient plus court quand on y ajoute deux lettres ?",
+    "ما هي الكلمة (بالإنجليزية) المكونة من 5 أحرف وتصبح أقصر عند إضافة حرفين؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "You see a boat filled with people, yet there is not a single person on board. How?",
+    "Tu vois un bateau plein de gens, pourtant il n'y a pas une seule personne à bord. Comment ?",
+    "ترى قارباً مليئاً بالناس، ومع ذلك لا يوجد شخص واحد (أعزب) على متنه. كيف؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "What starts with T, ends with T, and has T in it?",
+    "Qu'est-ce qui commence par T, finit par T et contient T ?",
+    "ما الذي يبدأ بـ T وينتهي بـ T ويحتوي على T؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "Where does today come before yesterday?",
+    "Où est-ce qu'aujourd'hui vient avant hier ?",
+    "أين يأتي اليوم قبل الأمس؟",
+    QuestionType.TEXT
+  ),
+  createPuzzle(
+    "What has 13 hearts but no other organs?",
+    "Qu'est-ce qui a 13 coeurs mais aucun autre organe ?",
+    "ما الذي له 13 قلباً ولا أعضاء أخرى؟",
+    QuestionType.TEXT
+  ),
 
   // Long Text Problem Solving (10)
-  createPuzzle("Explain the color blue to a blind person.", QuestionType.TEXTAREA),
-  createPuzzle("How would you escape a locked room with no windows and only a table?", QuestionType.TEXTAREA),
-  createPuzzle("Design a better umbrella.", QuestionType.TEXTAREA),
-  createPuzzle("If animals could talk, which would be the rudest?", QuestionType.TEXTAREA),
-  createPuzzle("How many piano tuners are there in New York? (Estimation)", QuestionType.TEXTAREA),
-  createPuzzle("How would you sell ice in Antarctica?", QuestionType.TEXTAREA),
-  createPuzzle("If you could change one law of physics, what would it be?", QuestionType.TEXTAREA),
-  createPuzzle("Describe the internet to someone from the 1800s.", QuestionType.TEXTAREA),
-  createPuzzle("Solve the trolley problem: 1 person you love vs 5 strangers.", QuestionType.TEXTAREA),
-  createPuzzle("Create a new holiday. What is it for?", QuestionType.TEXTAREA),
+  createPuzzle(
+    "Explain the color blue to a blind person.",
+    "Explique la couleur bleue à un aveugle.",
+    "اشرح اللون الأزرق لشخص كفيف.",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "How would you escape a locked room with no windows and only a table?",
+    "Comment t'échappes-tu d'une pièce fermée sans fenêtre avec juste une table ?",
+    "كيف تهرب من غرفة مقفلة بلا نوافذ وبها طاولة فقط؟",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "Design a better umbrella.",
+    "Conçois un meilleur parapluie.",
+    "صمم مظلة أفضل.",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "If animals could talk, which would be the rudest?",
+    "Si les animaux parlaient, lequel serait le plus impoli ?",
+    "لو كانت الحيوانات تتكلم، أيها سيكون الأكثر وقاحة؟",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "How many piano tuners are there in New York? (Estimation)",
+    "Combien d'accordeurs de piano à New York ? (Estimation)",
+    "كم عدد ضابطي البيانو في نيويورك؟ (تقدير)",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "How would you sell ice in Antarctica?",
+    "Comment vendrais-tu de la glace en Antarctique ?",
+    "كيف تبيع الثلج في القارة القطبية الجنوبية؟",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "If you could change one law of physics, what would it be?",
+    "Si tu pouvais changer une loi de la physique ?",
+    "لو استطعت تغيير قانون فيزيائي واحد، ماذا سيكون؟",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "Describe the internet to someone from the 1800s.",
+    "Décris internet à quelqu'un des années 1800.",
+    "صف الإنترنت لشخص من القرن التاسع عشر.",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "Solve the trolley problem: 1 person you love vs 5 strangers.",
+    "Dilemme du tramway : 1 personne aimée vs 5 inconnus.",
+    "حل معضلة الترام: شخص تحبه مقابل 5 غرباء.",
+    QuestionType.TEXTAREA
+  ),
+  createPuzzle(
+    "Create a new holiday. What is it for?",
+    "Crée une nouvelle fête. C'est pour quoi ?",
+    "ابتكر عطلة جديدة. لماذا هي؟",
+    QuestionType.TEXTAREA
+  ),
 ];
